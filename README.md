@@ -93,7 +93,7 @@ Full framework reference: `HoldingHealth_EvalFramework_Reference_v01.docx`
 git clone https://github.com/holdinghealth/open-global-health-biosecurity-ai-evals.git
 cd open-global-health-biosecurity-ai-evals
 
-pip install -r requirements.txt
+pip install -e ".[dev]"
 
 # Copy and fill in your API keys
 cp .env.example .env
@@ -168,6 +168,7 @@ gemini-2.5     | 7/18         | 12/18      | +5  | FAIL
 ```
 open-global-health-biosecurity-ai-evals/
 ├── README.md
+├── pyproject.toml                         ← package config (replaces requirements.txt)
 ├── methodology.md                         ← placeholder
 ├── claude_code_brief.md                   ← implementation brief
 ├── HoldingHealth_EvalFramework_Reference_v01.docx
@@ -175,10 +176,17 @@ open-global-health-biosecurity-ai-evals/
 │   └── global_health_ai_evals/
 │       ├── __init__.py                    ← exports task functions
 │       ├── _registry.py                   ← registers tasks with inspect CLI
+│       ├── metadata.py                    ← eval.yaml loader & versioning
 │       └── domain1_cultural/
 │           ├── __init__.py
+│           ├── eval.yaml                  ← eval metadata (title, version, tasks)
+│           ├── README.md                  ← eval-specific documentation
 │           ├── domain1_cultural.py        ← main Inspect task definitions
 │           └── domain1_rubric.py          ← custom 6-dimension scorer
+├── tests/
+│   ├── conftest.py                        ← shared test config
+│   └── domain1_cultural/
+│       └── test_domain1_cultural.py       ← 26 tests
 ├── datasets/
 │   ├── domain1_cultural.json              ← source of truth (do not modify)
 │   └── domain1_cultural_inspect.jsonl     ← Inspect-compatible (generated)
@@ -189,7 +197,6 @@ open-global-health-biosecurity-ai-evals/
 │   └── .gitkeep
 ├── logs/
 │   └── .gitkeep
-├── requirements.txt
 └── .env.example
 ```
 

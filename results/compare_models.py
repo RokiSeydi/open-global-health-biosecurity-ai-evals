@@ -12,15 +12,18 @@ Usage:
     python results/compare_models.py --log-dir logs/
 """
 
+from __future__ import annotations
+
 import argparse
 import csv
 import sys
 from pathlib import Path
+from typing import Any
 
 from inspect_ai.log import list_eval_logs, read_eval_log, read_eval_log_samples
 
 
-DIMENSION_ORDER = [
+DIMENSION_ORDER: list[str] = [
     "D1_narrative_arc",
     "D1_institutional_reflex",
     "D1_intent_recognition",
@@ -30,22 +33,21 @@ DIMENSION_ORDER = [
 ]
 
 
-def extract_model_name(eval_spec) -> str:
+def extract_model_name(eval_spec: Any) -> str:
     """Extract a readable model name from the eval spec."""
     model = eval_spec.model
     if hasattr(model, "name"):
         model = model.name
     model = str(model)
-    # Shorten common prefixes
     for prefix in ("anthropic/", "openai/", "google/"):
         if model.startswith(prefix):
             model = model[len(prefix):]
     return model
 
 
-def extract_results(log_dir: str) -> list[dict]:
+def extract_results(log_dir: str) -> list[dict[str, Any]]:
     """Extract scored results from all eval logs in the directory."""
-    records = []
+    records: list[dict[str, Any]] = []
 
     logs = list_eval_logs(log_dir)
     if not logs:
@@ -59,15 +61,15 @@ def extract_results(log_dir: str) -> list[dict]:
             print(f"  Skipping {log_info.name} (status: {log.status})")
             continue
 
-        model_name = extract_model_name(log.eval)
+        model_name: str = extract_model_name(log.eval)
 
         for sample in read_eval_log_samples(log_info.name):
             if not sample.scores:
                 continue
 
             for scorer_name, score_obj in sample.scores.items():
-                metadata = score_obj.metadata or {}
-                dimension_scores = metadata.get("dimension_scores", {})
+                metadata: dict[str, Any] = score_obj.metadata or {}
+                dimension_scores: dict[str, int] = metadata.get("dimension_scores", {})
                 if not dimension_scores:
                     continue
 
@@ -86,9 +88,9 @@ def extract_results(log_dir: str) -> list[dict]:
     return records
 
 
-def write_scores_table(records: list[dict], output_path: Path):
+def write_scores_table(records: list[dict[str, Any]], output_path: Path) -> None:
     """Write full dimension scores to CSV."""
-    fieldnames = [
+    fieldnames: list[str] = [
         "model", "prompt_type", "total_score", "max_score", "outcome",
         "gate_triggered", "critical_fail",
     ] + DIMENSION_ORDER
@@ -102,24 +104,26 @@ def write_scores_table(records: list[dict], output_path: Path):
     print(f"Wrote {output_path}")
 
 
-def write_gap_analysis(records: list[dict], output_path: Path):
+def write_gap_analysis(
+    records: list[dict[str, Any]], output_path: Path
+) -> list[dict[str, Any]]:
     """Compute and write scaffolded-unscaffolded gap per model."""
-    by_model = {}
+    by_model: dict[str, dict[str, dict[str, Any]]] = {}
     for r in records:
-        model = r["model"]
+        model: str = r["model"]
         if model not in by_model:
             by_model[model] = {}
         by_model[model][r["prompt_type"]] = r
 
-    rows = []
+    rows: list[dict[str, Any]] = []
     for model, prompt_types in sorted(by_model.items()):
-        unscaffolded = prompt_types.get("unscaffolded", {})
-        scaffolded = prompt_types.get("scaffolded", {})
+        unscaffolded: dict[str, Any] = prompt_types.get("unscaffolded", {})
+        scaffolded: dict[str, Any] = prompt_types.get("scaffolded", {})
 
-        u_total = unscaffolded.get("total_score", 0)
-        s_total = scaffolded.get("total_score", 0)
+        u_total: int = unscaffolded.get("total_score", 0)
+        s_total: int = scaffolded.get("total_score", 0)
 
-        row = {
+        row: dict[str, Any] = {
             "model": model,
             "unscaffolded_total": u_total,
             "scaffolded_total": s_total,
@@ -128,15 +132,14 @@ def write_gap_analysis(records: list[dict], output_path: Path):
             "scaffolded_outcome": scaffolded.get("outcome", "N/A"),
         }
 
-        # Per-dimension gaps
         for dim in DIMENSION_ORDER:
-            u_dim = unscaffolded.get(dim, 0)
-            s_dim = scaffolded.get(dim, 0)
+            u_dim: int = unscaffolded.get(dim, 0)
+            s_dim: int = scaffolded.get(dim, 0)
             row[f"{dim}_gap"] = s_dim - u_dim
 
         rows.append(row)
 
-    fieldnames = [
+    fieldnames: list[str] = [
         "model", "unscaffolded_total", "scaffolded_total", "gap",
         "unscaffolded_outcome", "scaffolded_outcome",
     ] + [f"{dim}_gap" for dim in DIMENSION_ORDER]
@@ -151,30 +154,30 @@ def write_gap_analysis(records: list[dict], output_path: Path):
     return rows
 
 
-def print_summary(records: list[dict], gap_rows: list[dict]):
+def print_summary(
+    records: list[dict[str, Any]], gap_rows: list[dict[str, Any]]
+) -> None:
     """Print summary tables to terminal."""
     print("\n" + "=" * 78)
     print("DOMAIN 1: CULTURAL CONTEXTUAL VALIDITY — CROSS-MODEL COMPARISON")
     print("=" * 78)
 
-    # Per-model detail table
     print(f"\n{'Model':<22} {'Type':<14} {'Score':>7} {'Outcome':<16} {'Gate':>5}")
     print("-" * 68)
     for r in sorted(records, key=lambda x: (x["model"], x["prompt_type"])):
-        gate_str = "YES" if r["gate_triggered"] else ""
+        gate_str: str = "YES" if r["gate_triggered"] else ""
         print(
             f"{r['model']:<22} {r['prompt_type']:<14} "
             f"{r['total_score']:>2}/{r['max_score']:<4} "
             f"{r['outcome']:<16} {gate_str:>5}"
         )
 
-    # Gap analysis table
     if gap_rows:
         print(f"\n{'Model':<22} {'Unscaffolded':>12} {'Scaffolded':>10} {'Gap':>5} "
               f"{'Outcome (unscaffolded)':<24}")
         print("-" * 78)
         for row in gap_rows:
-            outcome = row["unscaffolded_outcome"]
+            outcome: str = row["unscaffolded_outcome"]
             if row.get("gate_triggered"):
                 outcome += " (gate)"
             print(
@@ -185,15 +188,16 @@ def print_summary(records: list[dict], gap_rows: list[dict]):
                 f"{outcome:<24}"
             )
 
-        # Gap hypothesis check
         print("\nGap Hypothesis: All models show >= 4 point delta")
-        all_pass = all(row["gap"] >= 4 for row in gap_rows if row["scaffolded_total"] > 0)
+        all_pass: bool = all(
+            row["gap"] >= 4 for row in gap_rows if row["scaffolded_total"] > 0
+        )
         print(f"Result: {'SUPPORTED' if all_pass else 'NOT YET TESTABLE (need scaffolded runs)'}")
 
     print("=" * 78)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Compare Domain 1 eval results across models"
     )
@@ -203,12 +207,12 @@ def main():
     )
     args = parser.parse_args()
 
-    project_root = Path(__file__).resolve().parent.parent
-    log_dir = project_root / args.log_dir
-    results_dir = project_root / "results"
+    project_root: Path = Path(__file__).resolve().parent.parent
+    log_dir: Path = project_root / args.log_dir
+    results_dir: Path = project_root / "results"
 
     print(f"Reading logs from: {log_dir}")
-    records = extract_results(str(log_dir))
+    records: list[dict[str, Any]] = extract_results(str(log_dir))
 
     if not records:
         print("No scored results found. Run evaluations first.")
@@ -217,7 +221,9 @@ def main():
     print(f"Found {len(records)} scored results")
 
     write_scores_table(records, results_dir / "scores_table.csv")
-    gap_rows = write_gap_analysis(records, results_dir / "gap_analysis.csv")
+    gap_rows: list[dict[str, Any]] = write_gap_analysis(
+        records, results_dir / "gap_analysis.csv"
+    )
     print_summary(records, gap_rows)
 
 

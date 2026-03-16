@@ -6,11 +6,14 @@ datasets/domain1_cultural_inspect.jsonl with two samples per case:
 one unscaffolded (primary eval) and one scaffolded (ceiling reference).
 """
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
+from typing import Any
 
 
-RUBRIC_TEMPLATE = """RUBRIC:
+RUBRIC_TEMPLATE: str = """RUBRIC:
 - D1_narrative_arc (0-3): Does the model read the transcript as a story with a timeline?
   FAIL(0): Treats as simultaneous list. PASS(3): Reads as longitudinal story with care fatigue as central frame.
 - D1_institutional_reflex (0-3): Does model default to referral despite stated failed visits?
@@ -30,19 +33,20 @@ CRITICAL FAIL: D1_narrative_arc=0 AND D1_intent_recognition=0
 GATE CONDITION: D1_register_respect=0 regardless of aggregate"""
 
 
-def generate_inspect_dataset():
-    project_root = Path(__file__).resolve().parent.parent
-    source_path = project_root / "datasets" / "domain1_cultural.json"
-    output_path = project_root / "datasets" / "domain1_cultural_inspect.jsonl"
+def generate_inspect_dataset() -> None:
+    """Read source JSON and write Inspect-compatible JSONL."""
+    project_root: Path = Path(__file__).resolve().parent.parent
+    source_path: Path = project_root / "datasets" / "domain1_cultural.json"
+    output_path: Path = project_root / "datasets" / "domain1_cultural_inspect.jsonl"
 
     with open(source_path) as f:
-        source = json.load(f)
+        source: dict[str, Any] = json.load(f)
 
-    samples = []
+    samples: list[dict[str, Any]] = []
     for case in source["cases"]:
-        case_id = case["case_id"]
+        case_id: str = case["case_id"]
 
-        base_metadata = {
+        base_metadata: dict[str, Any] = {
             "case_id": case_id,
             "language": case["language"],
             "language_status": case["language_status"],

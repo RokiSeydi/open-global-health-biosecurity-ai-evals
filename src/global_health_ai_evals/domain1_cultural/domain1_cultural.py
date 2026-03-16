@@ -24,26 +24,25 @@ Reference: Seydi, R. (2026). Cultural Confabulation: A Structural Evaluation Gap
 in Large Language Model Reasoning.
 """
 
-import json
-import sys
-from pathlib import Path
+from __future__ import annotations
 
-# Inspect loads task files directly, so relative imports don't work.
-# Add this directory to sys.path for sibling module imports.
-_this_dir = str(Path(__file__).resolve().parent)
-if _this_dir not in sys.path:
-    sys.path.insert(0, _this_dir)
+import json
+from pathlib import Path
 
 from inspect_ai import Task, task
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.solver import generate
 
-from domain1_rubric import cultural_confabulation_scorer
+from global_health_ai_evals.domain1_cultural.domain1_rubric import (
+    cultural_confabulation_scorer,
+)
+from global_health_ai_evals.metadata import load_eval_metadata
+
+EVAL_VERSION = load_eval_metadata("domain1_cultural").version
 
 
 def _resolve_dataset_path() -> Path:
     """Resolve the JSONL dataset path relative to the project root."""
-    # Walk up from this file to find the datasets/ directory
     current = Path(__file__).resolve().parent
     for _ in range(5):
         candidate = current / "datasets" / "domain1_cultural_inspect.jsonl"
@@ -59,15 +58,15 @@ def _resolve_dataset_path() -> Path:
 def load_inspect_dataset() -> MemoryDataset:
     """Load the Inspect-compatible JSONL dataset."""
     path = _resolve_dataset_path()
-    samples = []
+    samples: list[Sample] = []
     with open(path) as f:
         for line in f:
             if line.strip():
-                record = json.loads(line)
+                record: dict[str, object] = json.loads(line)
                 samples.append(Sample(
-                    id=record["id"],
-                    input=record["input"],
-                    target=record["target"],
+                    id=str(record["id"]),
+                    input=str(record["input"]),
+                    target=str(record["target"]),
                     metadata=record.get("metadata", {}),
                 ))
     return MemoryDataset(samples=samples, name="domain1_cultural")
@@ -97,18 +96,21 @@ def cultural_confabulation_eval(
     prompt_type: str = "unscaffolded",
     eval_model: str | None = None,
     grader_model: str | None = None,
-):
+) -> Task:
     """Domain 1: Cultural Contextual Validity evaluation.
 
     Tests whether frontier LLMs demonstrate cultural contextual validity
     when interpreting longitudinal immigrant health narratives.
 
     Args:
-        prompt_type: "unscaffolded" (primary eval) or "scaffolded" (ceiling reference)
+        prompt_type: "unscaffolded" (primary eval) or "scaffolded" (ceiling reference).
         eval_model: Model being evaluated (used for auto grader selection).
             If None, auto-detection reads from the Inspect CLI --model flag.
         grader_model: Explicit grader model override. If None, auto-selects
             a grader that differs from the eval model.
+
+    Returns:
+        Task for cultural confabulation evaluation.
     """
     dataset = load_inspect_dataset()
 
@@ -120,18 +122,19 @@ def cultural_confabulation_eval(
         name=f"domain1_cultural_{prompt_type}",
     )
 
-    resolved_grader = grader_model or _auto_grader_model(eval_model)
+    resolved_grader: str = grader_model or _auto_grader_model(eval_model)
 
     return Task(
         dataset=filtered,
         solver=[generate()],
         scorer=cultural_confabulation_scorer(),
         model_roles={"grader": resolved_grader},
+        version=EVAL_VERSION.comparability_version,
         metadata={
+            **EVAL_VERSION.to_metadata(),
             "eval_framework": "Open Global Health & Biosecurity AI Evaluations",
             "domain": "1",
             "domain_name": "Cultural & Contextual Validity",
-            "version": "0.1",
             "paper_reference": (
                 "Seydi, R. (2026). Cultural Confabulation: A Structural "
                 "Evaluation Gap in LLM Reasoning."
@@ -147,7 +150,7 @@ def cultural_confabulation_eval(
 def cultural_confabulation_gap_analysis(
     eval_model: str | None = None,
     grader_model: str | None = None,
-):
+) -> Task:
     """Run both unscaffolded and scaffolded conditions to measure the gap.
 
     The gap (scaffolded_score - unscaffolded_score) is the empirical
@@ -159,17 +162,22 @@ def cultural_confabulation_gap_analysis(
     Args:
         eval_model: Model being evaluated (used for auto grader selection).
         grader_model: Explicit grader model override.
+
+    Returns:
+        Task for gap analysis evaluation.
     """
     dataset = load_inspect_dataset()
 
-    resolved_grader = grader_model or _auto_grader_model(eval_model)
+    resolved_grader: str = grader_model or _auto_grader_model(eval_model)
 
     return Task(
         dataset=dataset,
         solver=[generate()],
         scorer=cultural_confabulation_scorer(),
         model_roles={"grader": resolved_grader},
+        version=EVAL_VERSION.comparability_version,
         metadata={
+            **EVAL_VERSION.to_metadata(),
             "eval_framework": "Open Global Health & Biosecurity AI Evaluations",
             "domain": "1",
             "eval_type": "gap_analysis",

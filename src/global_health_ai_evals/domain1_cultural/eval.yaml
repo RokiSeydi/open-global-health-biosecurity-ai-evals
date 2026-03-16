@@ -1,0 +1,21 @@
+title: "Cultural Confabulation: Contextual Validity Evaluation for Global Health AI Deployment"
+description: |
+  Evaluates whether frontier LLMs demonstrate cultural contextual validity when
+  interpreting longitudinal health narratives from culturally diverse, non-Western
+  populations. Tests for six documented failure modes — temporal flattening,
+  institutional reflex, compliance framing, role collapse, over-medicalization,
+  and procedural care without interpretation — that produce medically coherent
+  but contextually inappropriate responses. These failures are not captured by
+  existing benchmarks. v0.1 evaluates a first-generation immigrant health
+  narrative in Italian; subsequent versions will include cases across languages,
+  populations, and health system contexts. Based on: Seydi, R. (2026). Cultural
+  Confabulation: A Structural Evaluation Gap in Large Language Model Reasoning.
+group: Knowledge
+contributors:
+  - rokiseydi
+version: "1-A"
+tasks:
+  - name: cultural_confabulation_eval
+    dataset_samples: 2
+  - name: cultural_confabulation_gap_analysis
+    dataset_samples: 2
