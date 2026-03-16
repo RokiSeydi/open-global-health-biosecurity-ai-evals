@@ -203,7 +203,20 @@ def cultural_confabulation_scorer():
     """
 
     async def score(state: TaskState, target: Target) -> Score:
+        # Auto-detect grader: if no explicit grader role is set, or if the
+        # grader role resolves to the same model that generated the response,
+        # switch to a different grader to avoid the Auditor's Blindspot
+        # (Seydi, 2026) — where the grader shares priors with the eval target.
+        eval_model = get_model()
+        eval_model_name = str(getattr(eval_model, "name", ""))
         grader = get_model(role="grader")
+        grader_name = str(getattr(grader, "name", ""))
+
+        if grader_name == eval_model_name:
+            if "claude" in eval_model_name.lower() or "anthropic" in eval_model_name.lower():
+                grader = get_model("openai/gpt-4o")
+            else:
+                grader = get_model("anthropic/claude-sonnet-4-20250514")
 
         model_response = state.output.completion
         prompt_type = state.metadata.get("prompt_type", "unknown")
