@@ -1,0 +1,16 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+logs/*.eval
+logs/*.json
+!logs/.gitkeep
+results/*.csv
+!results/.gitkeep
+!results/compare_models.py
+.DS_Store
