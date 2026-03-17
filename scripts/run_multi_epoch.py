@@ -22,6 +22,9 @@ from pathlib import Path
 MODELS: dict[str, str] = {
     "claude": "anthropic/claude-sonnet-4-20250514",
     "gpt4o": "openai/gpt-4o",
+    "gemini": "google/gemini-2.5-pro",
+    "deepseek": "deepseek/deepseek-r1",
+    "llama": "meta/llama-4-maverick",
 }
 
 CONDITIONS: list[str] = ["unscaffolded", "scaffolded"]

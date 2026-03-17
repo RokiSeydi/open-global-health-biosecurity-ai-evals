@@ -76,10 +76,12 @@ def _auto_grader_model(eval_model: str | None) -> str:
     """Select a grader model that differs from the model being evaluated.
 
     Rules:
-        Claude models  → use OpenAI GPT-4o as grader
-        OpenAI models  → use Anthropic Claude Sonnet as grader
-        Google models  → use Anthropic Claude Sonnet as grader
-        Unknown/None   → default to Anthropic Claude Sonnet
+        Claude models     → use OpenAI GPT-4o as grader
+        OpenAI models     → use Anthropic Claude Sonnet as grader
+        Google models     → use Anthropic Claude Sonnet as grader
+        DeepSeek models   → use Anthropic Claude Sonnet as grader
+        Meta/Llama models → use Anthropic Claude Sonnet as grader
+        Unknown/None      → default to Anthropic Claude Sonnet
     """
     if eval_model is None:
         return "anthropic/claude-sonnet-4-20250514"
