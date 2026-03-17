@@ -13,6 +13,7 @@ logs/*.json
 results/*.csv
 !results/.gitkeep
 !results/compare_models.py
+!results/multi_epoch_stats.csv
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

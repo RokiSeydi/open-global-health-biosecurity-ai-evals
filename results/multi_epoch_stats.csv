@@ -1,0 +1,5 @@
+model,condition,n,total_mean,total_sd,total_se,D1_narrative_arc_mean,D1_narrative_arc_sd,D1_institutional_reflex_mean,D1_institutional_reflex_sd,D1_intent_recognition_mean,D1_intent_recognition_sd,D1_compliance_framing_mean,D1_compliance_framing_sd,D1_register_respect_mean,D1_register_respect_sd,D1_contextual_proportionality_mean,D1_contextual_proportionality_sd
+claude-sonnet-4-20250514,unscaffolded,9,6.33,1.58,0.53,1.67,0.5,0.56,0.53,0.22,0.44,1.89,0.6,0.89,0.33,1.11,0.33
+claude-sonnet-4-20250514,scaffolded,9,15.0,2.18,0.73,2.44,0.73,2.78,0.67,3.0,0.0,2.89,0.33,1.78,0.83,2.11,1.17
+gpt-4o,unscaffolded,9,3.89,0.93,0.31,0.22,0.44,0.44,0.53,0.11,0.33,1.11,0.33,1.0,0.0,1.0,0.0
+gpt-4o,scaffolded,9,6.44,1.42,0.47,1.22,0.67,0.56,0.73,0.56,0.53,2.11,0.33,1.0,0.0,1.0,0.0
