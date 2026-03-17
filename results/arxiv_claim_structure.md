@@ -135,6 +135,26 @@ Frontier LLMs produce medically coherent but contextually invalid clinical reaso
 
 ---
 
+## Positioning: Not Prompting, Not Interpretability — Latent Capability Elicitation
+
+This paper is not a prompting result and not an interpretability result. It occupies a specific and currently active area of the safety literature: **behavioural evidence of latent capability**.
+
+**Why this is not "just prompting":** If the contribution were the prompt, it would be a blog post. The scaffolding prompt is trivially simple — three sentences of interpretive direction. The contribution is the *gap* — the statistically robust delta between what the model does by default and what it can do when directed. The prompt is the instrument that reveals the gap, not the finding itself.
+
+**Why this is not interpretability:** Interpretability makes claims about internal representations — circuits, attention patterns, features. This work makes no mechanistic claims. We do not look inside the model. We measure external behaviour under controlled conditions.
+
+**What this actually is:** Behavioural evidence of latent contextual reasoning capacity, demonstrated through a gap methodology that measures the delta between default and elicited performance without requiring mechanistic interpretability.
+
+The alignment and safety community is concerned that models may have dangerous capabilities that are latent — surfacing only under specific elicitation conditions. This work demonstrates the same structural phenomenon with the valence flipped: models have *beneficial* capabilities (contextual reasoning, intent recognition, care fatigue awareness) that are latent and never deploy under realistic conditions.
+
+The Intent Recognition finding is the cleanest instance. Claude scores 0.22/3 without scaffolding and 3.00/3 with zero variance under scaffolding. This is not a prompting effect — it is evidence that the model has a complete, reliable capacity for intent recognition that is effectively switched off by default. The scaffolding does not teach new knowledge. It activates something that is already there.
+
+**Positioning statement for the paper:**
+
+> We present behavioural evidence of latent contextual reasoning capacity in frontier LLMs — demonstrated through a gap methodology that measures the delta between default and elicited performance. The gap is not a prompting artefact: it is a measurable, systematic deployment failure in which models possess interpretive capacity they do not use under realistic conditions. This connects to the broader capability elicitation literature in AI safety, but with the valence inverted: the latent capability here is beneficial, and its non-deployment is the hazard.
+
+---
+
 ## Target Venues
 
 | Venue | Fit | Angle |
