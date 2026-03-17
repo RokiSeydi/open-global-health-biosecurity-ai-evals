@@ -1,6 +1,6 @@
 # Open Global Health & Biosecurity AI Evaluations
 
-**Domain 1 — Cultural Contextual Validity — v0.1**
+**Domain 1 — Cultural Contextual Validity — v0.2 (Multi-Epoch)**
 
 An open-source evaluation framework that tests whether frontier AI models demonstrate cultural contextual validity when interpreting real-world health narratives from culturally diverse, immigrant populations. Built on [UK AISI's Inspect Evals](https://inspect.aisi.org.uk/) framework.
 
@@ -49,6 +49,17 @@ A model that scores 13/18 with scaffolding and 7/18 without has a **gap of 6 poi
 
 **Hypothesis:** All three frontier models show >= 4 point delta between scaffolded and unscaffolded conditions.
 
+### v0.2 Results (Multi-Epoch, 3 epochs per model per condition)
+
+| Model | Unscaffolded | Scaffolded | Gap | 95% CI | Hypothesis |
+|-------|-------------|------------|-----|--------|------------|
+| Claude Sonnet 4 | 6.3/18 (FAIL) | 15.0/18 (PASS) | **+8.7** | [6.9, 10.4] | **SUPPORTED** |
+| GPT-4o | 3.9/18 (CRITICAL FAIL 67%) | 6.4/18 (FAIL) | **+2.6** | [1.4, 3.7] | NOT SUPPORTED |
+
+Intent Recognition is the sharpest discriminator: Claude scores 0.22/3 unscaffolded and 3.00/3 scaffolded (zero variance) — the model identifies the person's intent 0% of the time under realistic conditions and 100% of the time when directed to look.
+
+Full results: `results/v02_evaluation_report.md`
+
 ## Architecture
 
 Built on the [Inspect Evals](https://inspect.aisi.org.uk/) three-part pattern:
@@ -63,7 +74,7 @@ The grader model is always different from the model being evaluated:
 
 ## Eval Case: D1_IT_001
 
-v0.1 contains one evaluation case: a real health narrative from a first-generation Senegalese immigrant woman in Italy, spoken in non-standard oral Italian. The transcript covers dental problems, eye issues, and vitamin deficiency — but the actual content is a story of accumulated care fatigue, repeated failed medical encounters, and a desire for dignity and normalcy.
+v0.2 contains one evaluation case: a real health narrative from a first-generation Senegalese immigrant woman in Italy, spoken in non-standard oral Italian. The transcript covers dental problems, eye issues, and vitamin deficiency — but the actual content is a story of accumulated care fatigue, repeated failed medical encounters, and a desire for dignity and normalcy.
 
 The architecture is designed to make adding more cases trivial — add entries to the source JSON and regenerate the JSONL.
 
@@ -73,7 +84,7 @@ This is Domain 1 of a 4-domain framework:
 
 | Domain | Focus | Status |
 |--------|-------|--------|
-| **1. Cultural & Contextual Validity** | Cross-cultural psychiatry, idioms of distress | **v0.1 (this release)** |
+| **1. Cultural & Contextual Validity** | Cross-cultural psychiatry, idioms of distress | **v0.2 (this release)** |
 | 2. CHW Competency & Task-Shifting | Scope-of-practice, resource realism | Planned |
 | 3. Fragile Health System Reasoning | Hallucinated infrastructure, syndromic reasoning | Planned |
 | 4. Biosecurity & Dual-Use Governance | Governance reasoning at the dual-use boundary | Planned (v02 addendum available) |
@@ -156,13 +167,21 @@ Produces:
 - `results/gap_analysis.csv` — gap scores per model
 - Terminal summary table
 
-Expected output shape:
+## Multi-Epoch Evaluation
+
+```bash
+# Run 3 epochs per model per condition
+python scripts/run_multi_epoch.py --epochs 3
+
+# Run specific models or conditions
+python scripts/run_multi_epoch.py --epochs 5 --models claude
+python scripts/run_multi_epoch.py --epochs 3 --conditions unscaffolded
+
+# Analyse results
+python scripts/analyse_multi_epoch.py --log-dir logs/multi_epoch_<timestamp>
 ```
-Model          | Unscaffolded | Scaffolded | Gap | Outcome (unscaffolded)
-claude-sonnet  | 8/18         | 14/18      | +6  | FAIL
-gpt-4o         | 6/18         | 13/18      | +7  | CRITICAL FAIL (gate)
-gemini-2.5     | 7/18         | 12/18      | +5  | FAIL
-```
+
+Produces per-dimension means, standard deviations, standard errors, gap confidence intervals, and `results/multi_epoch_stats.csv`.
 
 ## Project Structure
 
@@ -192,10 +211,15 @@ open-global-health-biosecurity-ai-evals/
 │   ├── domain1_cultural.json              ← source of truth (do not modify)
 │   └── domain1_cultural_inspect.jsonl     ← Inspect-compatible (generated)
 ├── scripts/
-│   └── generate_inspect_dataset.py        ← JSONL generator
+│   ├── generate_inspect_dataset.py        ← JSONL generator
+│   ├── run_multi_epoch.py                 ← multi-epoch runner
+│   └── analyse_multi_epoch.py             ← statistical analysis
 ├── results/
 │   ├── compare_models.py                  ← cross-model comparison
-│   └── .gitkeep
+│   ├── v01_evaluation_report.md           ← single-run results
+│   ├── v02_evaluation_report.md           ← multi-epoch results
+│   ├── arxiv_claim_structure.md           ← paper claim architecture
+│   └── multi_epoch_stats.csv              ← statistical summary
 ├── logs/
 │   └── .gitkeep
 └── .env.example
