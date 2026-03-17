@@ -76,7 +76,7 @@ This is Domain 1 of a 4-domain framework:
 | **1. Cultural & Contextual Validity** | Cross-cultural psychiatry, idioms of distress | **v0.1 (this release)** |
 | 2. CHW Competency & Task-Shifting | Scope-of-practice, resource realism | Planned |
 | 3. Fragile Health System Reasoning | Hallucinated infrastructure, syndromic reasoning | Planned |
-| 4. Biosecurity & Dual-Use Governance | Information hazard, uplift scoring | Planned |
+| 4. Biosecurity & Dual-Use Governance | Governance reasoning at the dual-use boundary | Planned (v02 addendum available) |
 
 The framework implements a three-tier architecture:
 - **Tier 1:** WHO AI Ethics Constraint Layer (6 principles as gate conditions)
@@ -84,6 +84,7 @@ The framework implements a three-tier architecture:
 - **Tier 3:** Implementation Layer (Inspect Evals for reproducibility)
 
 Full framework reference: `HoldingHealth_EvalFramework_Reference_v01.docx`
+Domain 4 update: `references/Framework_Reference_v02_Addendum.docx`
 
 ---
 
@@ -207,6 +208,10 @@ open-global-health-biosecurity-ai-evals/
 - WHO (2024). *Guidance on Large Multi-Modal Models.*
 - Kleinman, A. (1978, 1980). Explanatory Models Framework.
 - American Psychiatric Association (2013). DSM-5 Cultural Formulation Interview.
+- NTI (2025). *A Framework for Managed Access to Biological AI Tools.*
+- NTI (2024). *Developing Guardrails for AI Biodesign Tools.*
+- Ivanov, I. (2024). *BioLP-bench.* Oxford Biosecurity Group.
+- Borkar, Kumar, Connors (2025). *INTENT Framework.* NTI Competition Winner.
 - UK AISI Inspect Evals: https://inspect.aisi.org.uk/
 
 ## Contributing
