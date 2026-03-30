@@ -2,7 +2,7 @@
 
 **v0.3 — Domains 1, 2 & 3 (Multi-Epoch, Three Models)**
 
-An open-source evaluation framework that tests whether frontier AI models demonstrate contextual validity when deployed in global health settings. Tests cultural confabulation, CHW scope miscalibration, and infrastructure hallucination — three failure modes invisible to existing AI evaluation benchmarks. Built on [UK AISI's Inspect Evals](https://inspect.aisi.org.uk/) framework.
+An open-source evaluation framework that tests whether frontier AI models demonstrate contextual validity when deployed in global health and biosecurity settings. Tests cultural confabulation, CHW scope miscalibration, and infrastructure hallucination — three failure modes invisible to existing AI evaluation benchmarks. Built on [UK AISI's Inspect Evals](https://inspect.aisi.org.uk/) framework.
 
 **Author:** Roki Seydi / [Holding Health](https://holdinghealth.org)
 **License:** CC BY 4.0
