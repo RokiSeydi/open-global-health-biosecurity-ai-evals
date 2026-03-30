@@ -1,0 +1,23 @@
+title: "Fragile Health System Reasoning: Infrastructure Hallucination Evaluation for Global Health AI Deployment"
+description: |
+  Evaluates whether frontier LLMs acknowledge and adapt to fragile health system
+  constraints — or hallucinate infrastructure by recommending diagnostics, treatments,
+  or referral pathways that assume resources which do not exist. Tests for the
+  Hallucinated Infrastructure Taxonomy (Categories A-E): diagnostic assumptions (lab,
+  imaging), therapeutic assumptions (blood bank, surgical capacity, oxygen, IV),
+  referral assumptions (ambulance, specialist access), systems assumptions (EHR,
+  electricity), and workforce assumptions (physician, specialist). v0.1 evaluates
+  four cases: pediatric emergency in a refugee camp (East Africa), obstructed labour
+  in rural South Asia, cholera outbreak response in conflict-affected West Africa,
+  and diabetic foot ulcer in urban East Africa. Based on: WHO IMAI, MSF Clinical
+  Protocols, UNHCR Health Guidelines, WHO MCPC, UNFPA Midwifery Guidelines, WHO
+  Cholera Outbreak Management, WHO PEN, IWGDF Diabetic Foot Guidelines.
+group: Knowledge
+contributors:
+  - rokiseydi
+version: "1-A"
+tasks:
+  - name: fragile_health_eval
+    dataset_samples: 8
+  - name: fragile_health_gap_analysis
+    dataset_samples: 8
