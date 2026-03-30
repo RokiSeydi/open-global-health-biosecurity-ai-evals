@@ -1,0 +1,22 @@
+title: "CHW Competency & Task-Shifting: Scope Calibration Evaluation for Global Health AI Deployment"
+description: |
+  Evaluates whether frontier LLMs calibrate clinical guidance to community health
+  worker (CHW) competency, scope of practice, and resource constraints. Tests for
+  six documented failure modes — task inflation, false universalism in resource
+  assumptions, decontextualization, danger sign blindness, broken referral pathways,
+  and procedural care without calibration — that produce guidance which may be
+  medically correct for a specialist setting but dangerous or impossible to follow
+  in a CHW context. v0.1 evaluates four cases: pediatric danger signs (rural
+  sub-Saharan Africa), cultural idiom at CHW level (Uganda), AI-CHW interaction
+  and autonomy (Nigeria), and documentation/infrastructure realism (Kenya). Based
+  on: WHO Task Shifting (2008), WHO CHW Guidelines (2018), iCCM/IMCI, MSF (2023),
+  CHIC best practices.
+group: Knowledge
+contributors:
+  - rokiseydi
+version: "1-A"
+tasks:
+  - name: chw_competency_eval
+    dataset_samples: 8
+  - name: chw_competency_gap_analysis
+    dataset_samples: 8
