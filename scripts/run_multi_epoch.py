@@ -8,6 +8,8 @@ Usage:
     python scripts/run_multi_epoch.py --epochs 3
     python scripts/run_multi_epoch.py --epochs 5 --models claude
     python scripts/run_multi_epoch.py --epochs 3 --conditions unscaffolded
+    python scripts/run_multi_epoch.py --epochs 3 --domain legal
+    python scripts/run_multi_epoch.py --epochs 3 --domain sociological --models claude gpt4o
 """
 
 from __future__ import annotations
@@ -29,7 +31,15 @@ MODELS: dict[str, str] = {
 
 CONDITIONS: list[str] = ["unscaffolded", "scaffolded"]
 
-TASK_FILE = "src/global_health_ai_evals/domain1_cultural/domain1_cultural.py"
+DOMAIN_TASK_FILES: dict[str, str] = {
+    "d1": "src/global_health_ai_evals/domain1_cultural/domain1_cultural.py",
+    "d2": "src/global_health_ai_evals/domain2_chw_competency/domain2_chw_competency.py",
+    "d3": "src/global_health_ai_evals/domain3_fragile_health_systems/domain3_fragile_health_systems.py",
+    "legal": "src/global_health_ai_evals/legal_reasoning/legal_reasoning.py",
+    "sociological": "src/global_health_ai_evals/sociological_reasoning/sociological_reasoning.py",
+}
+
+TASK_FILE = DOMAIN_TASK_FILES["d1"]  # default for backwards compat
 
 
 def run_eval(
@@ -38,6 +48,7 @@ def run_eval(
     condition: str,
     epoch: int,
     log_dir: Path,
+    task_file: str = TASK_FILE,
 ) -> bool:
     """Run a single eval pass. Returns True on success."""
     label = f"{model_key}/{condition}/epoch-{epoch}"
@@ -49,7 +60,7 @@ def run_eval(
     print(f"{'='*60}\n")
 
     cmd: list[str] = [
-        "inspect", "eval", TASK_FILE,
+        "inspect", "eval", task_file,
         "--model", model_id,
         "-T", f"prompt_type={condition}",
         "--log-dir", str(log_dir),
@@ -94,15 +105,24 @@ def main() -> None:
         choices=CONDITIONS,
         help="Conditions to run (default: both)",
     )
+    parser.add_argument(
+        "--domain", default="d1",
+        choices=list(DOMAIN_TASK_FILES.keys()),
+        help="Domain to evaluate (default: d1)",
+    )
     args = parser.parse_args()
+
+    task_file: str = DOMAIN_TASK_FILES[args.domain]
 
     project_root: Path = Path(__file__).resolve().parent.parent
     timestamp: str = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_dir: Path = project_root / "logs" / f"multi_epoch_{timestamp}"
+    log_dir: Path = project_root / "logs" / f"multi_epoch_{args.domain}_{timestamp}"
     log_dir.mkdir(parents=True, exist_ok=True)
 
     total_runs: int = args.epochs * len(args.models) * len(args.conditions)
     print(f"Multi-epoch evaluation run")
+    print(f"  Domain:     {args.domain}")
+    print(f"  Task file:  {task_file}")
     print(f"  Epochs:     {args.epochs}")
     print(f"  Models:     {args.models}")
     print(f"  Conditions: {args.conditions}")
@@ -119,7 +139,7 @@ def main() -> None:
             for epoch in range(1, args.epochs + 1):
                 run_num += 1
                 print(f"\n[{run_num}/{total_runs}]")
-                success = run_eval(model_key, model_id, condition, epoch, log_dir)
+                success = run_eval(model_key, model_id, condition, epoch, log_dir, task_file)
                 results.append({
                     "model": model_key,
                     "condition": condition,

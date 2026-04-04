@@ -1,6 +1,6 @@
 # Open Global Health & Biosecurity AI Evaluations
 
-**v0.3 — Domains 1, 2 & 3 (Multi-Epoch, Three Models)**
+**v0.3.1 — Domains 1 (4 cases), 2 & 3 (Multi-Epoch, Three Models)**
 
 An open-source evaluation framework that tests whether frontier AI models demonstrate contextual validity when deployed in global health and biosecurity settings. Tests cultural confabulation, CHW scope miscalibration, and infrastructure hallucination — three failure modes invisible to existing AI evaluation benchmarks. Built on [UK AISI's Inspect Evals](https://inspect.aisi.org.uk/) framework.
 
@@ -116,6 +116,26 @@ Systematic grader bias detected: Claude grades harder (mean 1.77/3) than GPT-4o 
 
 Full results: `results/v03_evaluation_report.md` | Inter-rater analysis: `results/interrater_reliability_report.md`
 
+### D1 v0.2 Results (4 Cases, Multi-Epoch)
+
+**72 scored samples. 432 dimension-level observations. 3 epochs per model. Statistically significant gap proof.**
+
+Domain 1 was expanded from 1 case to 4: the original Italian immigrant narrative (D1_IT_001) plus three English-language cases from the KCL Health Narratives study — a diagnostic odyssey in the NHS (D1_UK_001), PCOS management with gendered invalidation (D1_UK_002), and cross-border invisible disability navigation (D1_UK_003). v0.2 introduces case-aware grading: each case has its own grader prompts with case-specific key signals.
+
+| Model | Unscaffolded Mean | Scaffolded Mean | Gap | p-value | Cohen's d | U Pass Rate | S Pass Rate |
+|-------|:-----------------:|:---------------:|:---:|:-------:|:---------:|:-----------:|:-----------:|
+| Gemini 2.5 Pro | 75.0% | 95.4% | +3.67 | < 0.01 | 0.95 | 9/12 (75%) | 12/12 (100%) |
+| Claude Sonnet 4 | 67.6% | 92.1% | +4.42 | < 0.001 | 1.82 | 9/12 (75%) | 12/12 (100%) |
+| GPT-4o | 33.3% | 57.4% | +4.33 | < 0.001 | 1.54 | 0/12 (0%) | 6/12 (50%) |
+
+**Key D1 v0.2 findings:**
+- The Italian case (D1_IT_001) is universally hard: 0/9 unscaffolded passes across all models and epochs. The non-standard register barrier is consistent and not reducible to variance.
+- English cases confirm the failure is structural, not linguistic. The v0.1 "language barrier" objection is refuted.
+- GPT-4o structurally fails: 0/12 unscaffolded passes and generates all 4 CRITICAL_FAIL/GATE events in the dataset.
+- Register accessibility modulates contextual reasoning: Gemini scores 16.11/18 on English vs 5.67/18 on Italian unscaffolded — a 10.44-point spread with the same underlying knowledge.
+
+Full D1 v0.2 report: `reports/D1_v02_multi_epoch_findings_2026-04-05.md`
+
 ## Architecture
 
 Built on the [Inspect Evals](https://inspect.aisi.org.uk/) three-part pattern:
@@ -140,7 +160,7 @@ The grader model is always different from the model being evaluated:
 
 | Domain | Focus | Status |
 |--------|-------|--------|
-| **1. Cultural & Contextual Validity** | Cross-cultural psychiatry, idioms of distress | **v0.3 — implemented (1 case, 6 dims, 26 tests)** |
+| **1. Cultural & Contextual Validity** | Cross-cultural psychiatry, idioms of distress, diagnostic odyssey, gendered invalidation, invisible disability | **v0.3.1 — implemented (4 cases, 6 dims, 26 tests, case-aware grading)** |
 | **2. CHW Competency & Task-Shifting** | Scope-of-practice, resource realism | **v0.3 — implemented (4 cases, 9 dims, 32 tests)** |
 | **3. Fragile Health System Reasoning** | Hallucinated infrastructure, syndromic reasoning | **v0.3 — implemented (4 cases, 8 dims, 37 tests)** |
 | 4. Biosecurity & Dual-Use Governance | Governance reasoning at the dual-use boundary | Designed (framework reference available). Not yet implemented |

@@ -6,9 +6,11 @@ description: |
   institutional reflex, compliance framing, role collapse, over-medicalization,
   and procedural care without interpretation — that produce medically coherent
   but contextually inappropriate responses. These failures are not captured by
-  existing benchmarks. v0.1 evaluates a first-generation immigrant health
-  narrative in Italian; subsequent versions will include cases across languages,
-  populations, and health system contexts. Based on: Seydi, R. (2026). Cultural
+  existing benchmarks. v0.2 evaluates four cases: a first-generation immigrant
+  health narrative in Italian (D1_IT_001), a diagnostic odyssey in the UK NHS
+  (D1_UK_001), PCOS management across NHS and private care (D1_UK_002), and
+  cross-border invisible disability navigation (D1_UK_003). Based on: Seydi,
+  R. (2026). Cultural
   Confabulation: A Structural Evaluation Gap in Large Language Model Reasoning.
 group: Knowledge
 contributors:
@@ -16,6 +18,6 @@ contributors:
 version: "1-A"
 tasks:
   - name: cultural_confabulation_eval
-    dataset_samples: 2
+    dataset_samples: 8
   - name: cultural_confabulation_gap_analysis
-    dataset_samples: 2
+    dataset_samples: 8

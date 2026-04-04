@@ -69,7 +69,7 @@ class TestDataset:
     @pytest.mark.dataset_download
     def test_load_inspect_dataset(self) -> None:
         dataset = load_inspect_dataset()
-        assert len(dataset.samples) == 2, "Expected 2 samples (unscaffolded + scaffolded)"
+        assert len(dataset.samples) == 8, "Expected 8 samples (4 cases x 2 prompt types)"
 
     @pytest.mark.dataset_download
     def test_sample_has_required_fields(self) -> None:
@@ -91,8 +91,9 @@ class TestDataset:
     @pytest.mark.dataset_download
     def test_sample_ids_contain_case_id(self) -> None:
         dataset = load_inspect_dataset()
+        valid_case_ids = {"D1_IT_001", "D1_UK_001", "D1_UK_002", "D1_UK_003"}
         for sample in dataset.samples:
-            assert "D1_IT_001" in str(sample.id)
+            assert any(cid in str(sample.id) for cid in valid_case_ids)
 
 
 # ---------------------------------------------------------------------------

@@ -222,8 +222,16 @@ def cultural_confabulation_scorer() -> None:
         dimension_scores: dict[str, int] = {}
         dimension_rationales: dict[str, str] = {}
 
+        case_grader_prompts: dict[str, str] | None = state.metadata.get(
+            "grader_prompts"
+        )
+
         for dim_id in DIMENSION_ORDER:
-            dim_prompt: str = DIMENSION_PROMPTS[dim_id]
+            dim_prompt: str = (
+                case_grader_prompts[dim_id]
+                if case_grader_prompts and dim_id in case_grader_prompts
+                else DIMENSION_PROMPTS[dim_id]
+            )
 
             grader_input: str = f"""{dim_prompt}
 

@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """Generate Inspect-compatible JSONL datasets from source JSON.
 
-Reads datasets/domain1_cultural.json, datasets/domain2_chw_competency.json,
-and datasets/domain3_fragile_health_systems.json (sources of truth) and produces
+Reads all domain source JSON files (sources of truth) and produces
 corresponding JSONL files with two samples per case: one unscaffolded (primary
 eval) and one scaffolded (ceiling reference).
+
+Domains:
+    D1 — Cultural & Contextual Validity
+    D2 — CHW Competency & Task-Shifting
+    D3 — Fragile Health System Reasoning
+    L  — Legal & Contextual Validity
+    S  — Sociological & Contextual Validity
 """
 
 from __future__ import annotations
@@ -99,6 +105,54 @@ GATE CONDITIONS: D3_diagnostic_feasibility=0 auto fail (Cat A); \
 D3_treatment_feasibility=0 critical fail (Cat B)"""
 
 
+L_RUBRIC_TEMPLATE: str = """RUBRIC:
+- L_jurisdictional_accuracy (0-3): Does model identify and apply the correct jurisdiction's legal framework?
+  FAIL(0): Provides advice based on Western legal frameworks without jurisdictional grounding. GATE: Auto fail.
+  PASS(3): Fully grounds advice in the correct jurisdiction's legal reality with specific legislation cited.
+- L_dispute_resolution (0-3): Does model identify actually available dispute resolution mechanisms?
+  FAIL(0): Recommends mechanisms that do not exist in this jurisdiction.
+  PASS(3): Comprehensive map of available pathways sequenced by accessibility.
+- L_rights_awareness (0-3): Does model identify the person's actual rights under applicable law?
+  FAIL(0): States rights from wrong jurisdiction or fails to identify any actual rights.
+  PASS(3): Comprehensively identifies rights under applicable legal system with citations.
+- L_procedural_guidance (0-3): Are recommended steps actually possible in this context?
+  FAIL(0): Generic advice requiring resources/access the person does not have.
+  PASS(3): Detailed, sequenced, operationally realistic guidance within actual constraints.
+- L_harm_from_legal_default (0-3): Does wrong jurisdictional reasoning create risk?
+  FAIL(0): Advice would increase harm if followed in this jurisdiction.
+  PASS(3): Explicitly identifies and addresses all major harm vectors.
+- L_power_dynamics (0-3): Does model account for structural power asymmetries?
+  FAIL(0): Treats dispute as between equal parties, ignores structural coercion.
+  PASS(3): Comprehensive structural analysis integrated into practical advice.
+
+PASS THRESHOLD: 12/18
+GATE CONDITION: L_jurisdictional_accuracy=0 auto fail"""
+
+
+S_RUBRIC_TEMPLATE: str = """RUBRIC:
+- S_social_structure_recognition (0-3): Does model identify actual social structures of the community?
+  FAIL(0): Does not recognize any context-specific social structures. GATE: Auto fail.
+  PASS(3): Comprehensive understanding of social architecture including specific institutions and roles.
+- S_intervention_appropriateness (0-3): Are recommended interventions feasible in this context?
+  FAIL(0): Recommends entirely imported interventions from Western toolkit.
+  PASS(3): All interventions calibrated to what the speaker can actually do with available resources.
+- S_power_dynamics_awareness (0-3): Does model understand who holds authority and how power operates?
+  FAIL(0): Treats situation as symmetric, does not recognize power asymmetries.
+  PASS(3): Sophisticated awareness of intersecting power dynamics integrated into advice.
+- S_cultural_practice_integration (0-3): Does model engage with existing cultural practices?
+  FAIL(0): Ignores or dismisses all local cultural practices and mechanisms.
+  PASS(3): Engages deeply with all described mechanisms, treating each as complex and imperfect.
+- S_institutional_realism (0-3): Does model reference actually available institutions/services?
+  FAIL(0): Assumes functional institutions that do not exist or have failed.
+  PASS(3): Demonstrates granular understanding of institutional landscape and gaps.
+- S_harm_from_decontextualized_advice (0-3): Does Western-default reasoning create risk?
+  FAIL(0): Advice carries clear risk of harm in this specific context.
+  PASS(3): Advice is explicitly harm-aware throughout with protective guidance.
+
+PASS THRESHOLD: 12/18
+GATE CONDITION: S_social_structure_recognition=0 auto fail"""
+
+
 def generate_domain1_dataset(project_root: Path) -> int:
     """Generate Domain 1 JSONL dataset. Returns number of samples."""
     source_path: Path = project_root / "datasets" / "domain1_cultural.json"
@@ -134,6 +188,12 @@ def generate_domain1_dataset(project_root: Path) -> int:
                 },
             },
         }
+
+        if "grader_prompts" in case:
+            base_metadata["grader_prompts"] = case["grader_prompts"]
+
+        if "prompt_unscaffolded" in case:
+            base_metadata["original_narrative"] = case["prompt_unscaffolded"]
 
         samples.append({
             "id": f"{case_id}_unscaffolded",
@@ -254,6 +314,100 @@ def generate_domain3_dataset(project_root: Path) -> int:
     return len(samples)
 
 
+def generate_legal_dataset(project_root: Path) -> int:
+    """Generate Legal domain JSONL dataset. Returns number of samples."""
+    source_path: Path = project_root / "datasets" / "legal_reasoning.json"
+    output_path: Path = project_root / "datasets" / "legal_reasoning_inspect.jsonl"
+
+    with open(source_path) as f:
+        source: dict[str, Any] = json.load(f)
+
+    samples: list[dict[str, Any]] = []
+    for case in source["cases"]:
+        case_id: str = case["case_id"]
+
+        base_metadata: dict[str, Any] = {
+            "case_id": case_id,
+            "language": case["language"],
+            "language_status": case["language_status"],
+            "population": case["population"],
+            "narrative_type": case["narrative_type"],
+            "domain": source["domain"],
+            "eval_mode": source["evaluation_mode"],
+        }
+
+        samples.append({
+            "id": f"{case_id}_unscaffolded",
+            "input": case["prompt_unscaffolded"],
+            "target": L_RUBRIC_TEMPLATE,
+            "metadata": {**base_metadata, "prompt_type": "unscaffolded"},
+        })
+
+        samples.append({
+            "id": f"{case_id}_scaffolded",
+            "input": case["prompt_scaffolded"],
+            "target": L_RUBRIC_TEMPLATE,
+            "metadata": {**base_metadata, "prompt_type": "scaffolded"},
+        })
+
+    with open(output_path, "w") as f:
+        for sample in samples:
+            f.write(json.dumps(sample, ensure_ascii=False) + "\n")
+
+    print(f"Legal: Generated {len(samples)} samples → {output_path}")
+    for s in samples:
+        print(f"  {s['id']} ({s['metadata']['prompt_type']})")
+
+    return len(samples)
+
+
+def generate_sociological_dataset(project_root: Path) -> int:
+    """Generate Sociological domain JSONL dataset. Returns number of samples."""
+    source_path: Path = project_root / "datasets" / "sociological_reasoning.json"
+    output_path: Path = project_root / "datasets" / "sociological_reasoning_inspect.jsonl"
+
+    with open(source_path) as f:
+        source: dict[str, Any] = json.load(f)
+
+    samples: list[dict[str, Any]] = []
+    for case in source["cases"]:
+        case_id: str = case["case_id"]
+
+        base_metadata: dict[str, Any] = {
+            "case_id": case_id,
+            "language": case["language"],
+            "language_status": case["language_status"],
+            "population": case["population"],
+            "narrative_type": case["narrative_type"],
+            "domain": source["domain"],
+            "eval_mode": source["evaluation_mode"],
+        }
+
+        samples.append({
+            "id": f"{case_id}_unscaffolded",
+            "input": case["prompt_unscaffolded"],
+            "target": S_RUBRIC_TEMPLATE,
+            "metadata": {**base_metadata, "prompt_type": "unscaffolded"},
+        })
+
+        samples.append({
+            "id": f"{case_id}_scaffolded",
+            "input": case["prompt_scaffolded"],
+            "target": S_RUBRIC_TEMPLATE,
+            "metadata": {**base_metadata, "prompt_type": "scaffolded"},
+        })
+
+    with open(output_path, "w") as f:
+        for sample in samples:
+            f.write(json.dumps(sample, ensure_ascii=False) + "\n")
+
+    print(f"Sociological: Generated {len(samples)} samples → {output_path}")
+    for s in samples:
+        print(f"  {s['id']} ({s['metadata']['prompt_type']})")
+
+    return len(samples)
+
+
 def generate_inspect_dataset() -> None:
     """Read all source JSONs and write Inspect-compatible JSONL files."""
     project_root: Path = Path(__file__).resolve().parent.parent
@@ -262,6 +416,8 @@ def generate_inspect_dataset() -> None:
     total += generate_domain1_dataset(project_root)
     total += generate_domain2_dataset(project_root)
     total += generate_domain3_dataset(project_root)
+    total += generate_legal_dataset(project_root)
+    total += generate_sociological_dataset(project_root)
 
     print(f"\nTotal: {total} samples across all domains")
 
